@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Salas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 10px;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        form input, form select, form button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        form button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        form button:hover {
+            background-color: #2980b9;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .reservas-list {
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 10px;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        ul li {
+            background-color: #ecf0f1;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        ul li a {
+            text-decoration: none;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        ul li a:hover {
+            color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Reservar Sala</h1>
+
+    <form action="/reservar" method="POST">
+        <label for="nome">Nome</label>
+        <input type="text" name="nome" placeholder="Nome" required>
+        
+        <label for="matricula">Matrícula</label>
+        <input type="text" name="matricula" placeholder="Matrícula" required>
+        
+        <label for="setor">Setor</label>
+        <input type="text" name="setor" placeholder="Setor" required>
+        
+        <label for="sala_id">Sala</label>
+        <select name="sala_id" required>
+            <option value="">Selecione uma sala</option>
+            <option value="1">Sala 1 - capacidade: 40</option>
+            <option value="2">Sala 2 - capacidade: 40</option>
+            <option value="3">Sala 3 - capacidade: 40</option>
+            <option value="4">Sala 4 - capacidade: 40</option>
+            <option value="5">Sala 5 - capacidade: 40</option>
+            <option value="6">Sala 6 - capacidade: 40</option>
+            <option value="7">Sala 7 - capacidade: 40</option>
+            <option value="8">Sala 8 - capacidade: 40</option>
+            <option value="9">Auditório - capacidade: 150</option>
+        </select>
+
+        <label for="data">Data</label>
+        <input type="date" name="data" required min="2024-01-01">
+        
+        <label for="periodo">Período</label>
+        <select name="periodo" required>
+            <option value="matutino">Matutino</option>
+            <option value="vespertino">Vespertino</option>
+            <option value="integral">Integral</option>
+        </select>
+
+        <label for="equipamentos">Equipamentos (opcional)</label>
+        <input type="checkbox" name="equipamentos" value="Projetor"> Projetor
+        <input type="checkbox" name="equipamentos" value="Computador"> Computador
+        <input type="checkbox" name="equipamentos" value="Sistema de Som"> Sistema de Som
+        
+        <button type="submit">Reservar</button>
+    </form>
+
+    <h2>Reservas Feitas</h2>
+
+    <div class="reservas-list">
+        <ul>
+            {% for reserva in reservas %}
+                <li>
+                    Nome: {{ reserva[0] }}, Data: {{ reserva[1] }}, Período: {{ reserva[2] }}, 
+                    Sala: {{ reserva[3] }}, Equipamentos: {{ reserva[4] }}
+                    <a href="/deletar/{{ reserva[5] }}" onclick="return confirm('Tem certeza que deseja excluir esta reserva?');">Excluir</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+</body>
+</html>
