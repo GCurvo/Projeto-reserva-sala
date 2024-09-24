@@ -15,6 +15,16 @@
             text-align: center;
             color: #2c3e50;
         }
+        .message {
+            background-color: #dff0d8;
+            color: #3c763d;
+            padding: 10px;
+            margin: 10px auto;
+            border: 1px solid #d6e9c6;
+            border-radius: 5px;
+            max-width: 600px;
+            text-align: center;
+        }
         form {
             background-color: #ffffff;
             padding: 20px;
@@ -30,6 +40,11 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
+        form label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
         form button {
             background-color: #3498db;
             color: white;
@@ -38,11 +53,6 @@
         }
         form button:hover {
             background-color: #2980b9;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
         }
         .reservas-list {
             background-color: #ffffff;
@@ -67,10 +77,19 @@
         }
         ul li a {
             text-decoration: none;
-            color: #e74c3c;
             font-weight: bold;
+            margin-left: 10px;
         }
-        ul li a:hover {
+        ul li a.editar {
+            color: #3498db;
+        }
+        ul li a.editar:hover {
+            color: #2980b9;
+        }
+        ul li a.excluir {
+            color: #e74c3c;
+        }
+        ul li a.excluir:hover {
             color: #c0392b;
         }
     </style>
@@ -79,15 +98,24 @@
 
     <h1>Reservar Sala</h1>
 
+    <!-- Exibir a mensagem de sucesso -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="message">
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+
     <form action="/reservar" method="POST">
         <label for="nome">Nome</label>
         <input type="text" name="nome" placeholder="Nome" required>
         
         <label for="matricula">Matrícula</label>
-        <input type="text" name="matricula" placeholder="Matrícula" required>
-        
+        <input type="number" name="matricula" placeholder="Matrícula" required min="0">
+
         <label for="setor">Setor</label>
-        <input type="text" name="setor" placeholder="Setor" required>
+        <input type="number" name="setor" placeholder="Setor" required min="0">
         
         <label for="sala_id">Sala</label>
         <select name="sala_id" required>
@@ -104,7 +132,7 @@
         </select>
 
         <label for="data">Data</label>
-        <input type="date" name="data" required min="2024-01-01">
+        <input type="date" name="data" required min="2024-01-01" max="9999-12-31">
         
         <label for="periodo">Período</label>
         <select name="periodo" required>
@@ -126,11 +154,14 @@
     <div class="reservas-list">
         <ul>
             {% for reserva in reservas %}
-                <li>
-                    Nome: {{ reserva[0] }}, Data: {{ reserva[1] }}, Período: {{ reserva[2] }}, 
-                    Sala: {{ reserva[3] }}, Equipamentos: {{ reserva[4] }}
-                    <a href="/deletar/{{ reserva[5] }}" onclick="return confirm('Tem certeza que deseja excluir esta reserva?');">Excluir</a>
-                </li>
+            <li>
+                Nome: {{ reserva[0] }}, Data: {{ reserva[1] }}, Período: {{ reserva[2] }}, 
+                Sala: {{ reserva[3] }}, Equipamentos: {{ reserva[4] }}
+                <div>
+                    <a href="/editar/{{ reserva[5] }}" class="editar">Editar</a>
+                    <a href="/deletar/{{ reserva[5] }}" class="excluir" onclick="return confirm('Tem certeza que deseja excluir esta reserva?');">Excluir</a>
+                </div>
+            </li>
             {% endfor %}
         </ul>
     </div>

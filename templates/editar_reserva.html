@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Reserva</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 10px;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        form input, form select, form button, form label {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        form label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        form button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        form button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Editar Reserva</h1>
+
+    <form method="POST">
+        <label for="nome">Nome</label>
+        <input type="text" name="nome" value="{{ reserva[1] }}" required>
+
+        <label for="matricula">Matrícula</label>
+        <input type="number" name="matricula" value="{{ reserva[2] }}" required min="0">
+
+        <label for="setor">Setor</label>
+        <input type="number" name="setor" value="{{ reserva[3] }}" required min="0">
+
+        <label for="sala_id">Sala</label>
+        <select name="sala_id" required>
+            <option value="1" {% if reserva[4] == '1' %}selected{% endif %}>Sala 1 - capacidade: 40</option>
+            <option value="2" {% if reserva[4] == '2' %}selected{% endif %}>Sala 2 - capacidade: 40</option>
+            <option value="3" {% if reserva[4] == '3' %}selected{% endif %}>Sala 3 - capacidade: 40</option>
+            <option value="4" {% if reserva[4] == '4' %}selected{% endif %}>Sala 4 - capacidade: 40</option>
+            <option value="5" {% if reserva[4] == '5' %}selected{% endif %}>Sala 5 - capacidade: 40</option>
+            <option value="6" {% if reserva[4] == '6' %}selected{% endif %}>Sala 6 - capacidade: 40</option>
+            <option value="7" {% if reserva[4] == '7' %}selected{% endif %}>Sala 7 - capacidade: 40</option>
+            <option value="8" {% if reserva[4] == '8' %}selected{% endif %}>Sala 8 - capacidade: 40</option>
+            <option value="9" {% if reserva[4] == '9' %}selected{% endif %}>Auditório - capacidade: 150</option>
+        </select>
+
+        <label for="data">Data</label>
+        <input type="date" name="data" value="{{ reserva[5] }}" required max="9999-12-31">
+
+        <label for="periodo">Período</label>
+        <select name="periodo" required>
+            <option value="matutino" {% if reserva[6] == 'matutino' %}selected{% endif %}>Matutino</option>
+            <option value="vespertino" {% if reserva[6] == 'vespertino' %}selected{% endif %}>Vespertino</option>
+            <option value="integral" {% if reserva[6] == 'integral' %}selected{% endif %}>Integral</option>
+        </select>
+
+        <label for="equipamentos">Equipamentos (opcional)</label>
+        <input type="checkbox" name="equipamentos" value="Projetor" {% if 'Projetor' in reserva[7] %}checked{% endif %}> Projetor
+        <input type="checkbox" name="equipamentos" value="Computador" {% if 'Computador' in reserva[7] %}checked{% endif %}> Computador
+        <input type="checkbox" name="equipamentos" value="Sistema de Som" {% if 'Sistema de Som' in reserva[7] %}checked{% endif %}> Sistema de Som
+
+        <button type="submit">Salvar Alterações</button>
+    </form>
+
+    <a href="/">Voltar</a>
+
+</body>
+</html>
