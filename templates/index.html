@@ -3,168 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reserva de Salas</title>
+    <title>Menu Principal</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        h1, h2 {
+        h1 {
             text-align: center;
             color: #2c3e50;
+            margin-bottom: 40px;
         }
-        .message {
-            background-color: #dff0d8;
-            color: #3c763d;
-            padding: 10px;
-            margin: 10px auto;
-            border: 1px solid #d6e9c6;
-            border-radius: 5px;
-            max-width: 600px;
+        .menu-container {
             text-align: center;
-        }
-        form {
             background-color: #ffffff;
-            padding: 20px;
-            margin: 20px auto;
+            padding: 30px;
             border-radius: 10px;
-            max-width: 600px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        form input, form select, form button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        form label {
-            font-weight: bold;
+        .menu-container a {
             display: block;
-            margin-top: 10px;
-        }
-        form button {
+            padding: 15px;
+            margin: 10px 0;
             background-color: #3498db;
             color: white;
-            border: none;
-            cursor: pointer;
-        }
-        form button:hover {
-            background-color: #2980b9;
-        }
-        .reservas-list {
-            background-color: #ffffff;
-            padding: 20px;
-            margin: 20px auto;
-            border-radius: 10px;
-            max-width: 600px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        ul li {
-            background-color: #ecf0f1;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        ul li a {
             text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
             font-weight: bold;
-            margin-left: 10px;
         }
-        ul li a.editar {
-            color: #3498db;
-        }
-        ul li a.editar:hover {
-            color: #2980b9;
-        }
-        ul li a.excluir {
-            color: #e74c3c;
-        }
-        ul li a.excluir:hover {
-            color: #c0392b;
+        .menu-container a:hover {
+            background-color: #2980b9;
         }
     </style>
 </head>
 <body>
-
-    <h1>Reservar Sala</h1>
-
-    <!-- Exibir a mensagem de sucesso -->
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="message">
-          {{ messages[0] }}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-    <form action="/reservar" method="POST">
-        <label for="nome">Nome</label>
-        <input type="text" name="nome" placeholder="Nome" required>
-        
-        <label for="matricula">Matrícula</label>
-        <input type="number" name="matricula" placeholder="Matrícula" required min="0">
-
-        <label for="setor">Setor</label>
-        <input type="number" name="setor" placeholder="Setor" required min="0">
-        
-        <label for="sala_id">Sala</label>
-        <select name="sala_id" required>
-            <option value="">Selecione uma sala</option>
-            <option value="1">Sala 1 - capacidade: 40</option>
-            <option value="2">Sala 2 - capacidade: 40</option>
-            <option value="3">Sala 3 - capacidade: 40</option>
-            <option value="4">Sala 4 - capacidade: 40</option>
-            <option value="5">Sala 5 - capacidade: 40</option>
-            <option value="6">Sala 6 - capacidade: 40</option>
-            <option value="7">Sala 7 - capacidade: 40</option>
-            <option value="8">Sala 8 - capacidade: 40</option>
-            <option value="9">Auditório - capacidade: 150</option>
-        </select>
-
-        <label for="data">Data</label>
-        <input type="date" name="data" required min="2024-01-01" max="9999-12-31">
-        
-        <label for="periodo">Período</label>
-        <select name="periodo" required>
-            <option value="matutino">Matutino</option>
-            <option value="vespertino">Vespertino</option>
-            <option value="integral">Integral</option>
-        </select>
-
-        <label for="equipamentos">Equipamentos (opcional)</label>
-        <input type="checkbox" name="equipamentos" value="Projetor"> Projetor
-        <input type="checkbox" name="equipamentos" value="Computador"> Computador
-        <input type="checkbox" name="equipamentos" value="Sistema de Som"> Sistema de Som
-        
-        <button type="submit">Reservar</button>
-    </form>
-
-    <h2>Reservas Feitas</h2>
-
-    <div class="reservas-list">
-        <ul>
-            {% for reserva in reservas %}
-            <li>
-                Nome: {{ reserva[0] }}, Data: {{ reserva[1] }}, Período: {{ reserva[2] }}, 
-                Sala: {{ reserva[3] }}, Equipamentos: {{ reserva[4] }}
-                <div>
-                    <a href="/editar/{{ reserva[5] }}" class="editar">Editar</a>
-                    <a href="/deletar/{{ reserva[5] }}" class="excluir" onclick="return confirm('Tem certeza que deseja excluir esta reserva?');">Excluir</a>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
+    <div class="menu-container">
+        <h1>Menu Principal</h1>
+        <a href="/agendar">Agendar Sala</a>
+        <a href="/equipamentos">Equipamentos</a>
+        <a href="/agenda">Agenda</a>
     </div>
-
 </body>
 </html>

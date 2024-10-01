@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Sala</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .message {
+            background-color: #dff0d8;
+            color: #3c763d;
+            padding: 10px;
+            margin: 10px auto;
+            border: 1px solid #d6e9c6;
+            border-radius: 5px;
+            max-width: 600px;
+            text-align: center;
+        }
+        .form-container {
+            display: flex;
+            justify-content: center;
+            margin: 0 auto;
+        }
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+        }
+        form input, form select, form button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        form label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        button.btn-reservar {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        button.btn-reservar:hover {
+            background-color: #2980b9;
+        }
+        .btn-voltar {
+            display: block;
+            margin: 20px auto;
+            background-color: #95a5a6;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Agendar Sala</h1>
+
+    <!-- Exibir a mensagem de sucesso -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="message">
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="form-container">
+        <form action="/agendar" method="POST">
+            <label for="nome">Nome</label>
+            <input type="text" name="nome" placeholder="Nome" required>
+            
+            <label for="matricula">Matrícula</label>
+            <input type="number" name="matricula" placeholder="Matrícula" required min="0">
+
+            <label for="setor">Setor</label>
+            <input type="number" name="setor" placeholder="Setor" required min="0">
+            
+            <label for="sala_id">Sala</label>
+            <select name="sala_id" required>
+                <option value="">Selecione uma sala</option>
+                <option value="1">Sala 1 - capacidade: 40</option>
+                <option value="2">Sala 2 - capacidade: 40</option>
+                <option value="3">Sala 3 - capacidade: 40</option>
+                <option value="4">Sala 4 - capacidade: 40</option>
+                <option value="5">Sala 5 - capacidade: 40</option>
+                <option value="6">Sala 6 - capacidade: 40</option>
+                <option value="7">Sala 7 - capacidade: 40</option>
+                <option value="8">Sala 8 - capacidade: 40</option>
+                <option value="9">Auditório - capacidade: 150</option>
+            </select>
+
+            <label for="data">Data</label>
+            <input type="date" name="data" required min="2024-01-01" max="9999-12-31">
+            
+            <label for="periodo">Período</label>
+            <select name="periodo" required>
+                <option value="matutino">Matutino</option>
+                <option value="vespertino">Vespertino</option>
+                <option value="integral">Integral</option>
+            </select>
+
+            <label for="equipamentos">Equipamentos (opcional)</label>
+            {% for equipamento in equipamentos %}
+            <input type="checkbox" name="equipamentos" value="{{ equipamento[1] }}"> {{ equipamento[1] }} (Quantidade: {{ equipamento[2] }})
+            {% endfor %}
+            
+            <button type="submit" class="btn-reservar">Reservar</button>
+        </form>
+    </div>
+
+    <!-- Botão para voltar ao menu principal -->
+    <a href="/" class="btn-voltar">Voltar ao Menu Principal</a>
+
+</body>
+</html>

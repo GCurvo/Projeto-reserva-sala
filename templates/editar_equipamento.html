@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Equipamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        form input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        form button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-voltar {
+            display: block;
+            margin: 20px auto;
+            background-color: #95a5a6;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Editar Equipamento</h1>
+
+    <div class="container">
+        <!-- Formulário para editar o equipamento -->
+        <form action="/editar_equipamento/{{ equipamento[0] }}" method="POST">
+            <label for="nome">Nome do Equipamento</label>
+            <input type="text" name="nome" value="{{ equipamento[1] }}" required>
+
+            <label for="quantidade">Quantidade</label>
+            <input type="number" name="quantidade" value="{{ equipamento[2] }}" required min="1">
+
+            <button type="submit">Salvar Alterações</button>
+        </form>
+    </div>
+
+    <!-- Botão para voltar ao menu principal -->
+    <a href="/" class="btn-voltar">Voltar ao Menu Principal</a>
+
+</body>
+</html>
