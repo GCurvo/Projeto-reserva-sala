@@ -1,21 +1,19 @@
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
-from database import conectar, criar_tabelas
+from pymongo import MongoClient
 import os
 
 app = Flask(__name__,
     static_folder='../static',
     template_folder='../templates')
-app.secret_key = 'chave_secreta'
 
-# Garantir que as tabelas sejam criadas ao iniciar o aplicativo
-criar_tabelas()
+# Conexão com MongoDB
+client = MongoClient('sua_string_conexao_mongodb')
+db = client.agenda_salas
 
-# Rota para o menu principal
 @app.route('/')
 def menu():
     return render_template('index.html')
 
-# Rota para agendar uma sala (página de agendamento de sala)
 @app.route('/agendar', methods=['GET', 'POST'])
 def agendar_sala():
     if request.method == 'POST':
@@ -25,72 +23,60 @@ def agendar_sala():
         sala_id = request.form['sala_id']
         data = request.form['data']
         periodo = request.form['periodo']
-        equipamentos = ', '.join(request.form.getlist('equipamentos')) if request.form.getlist('equipamentos') else ''
+        equipamentos = request.form.getlist('equipamentos')
 
-        conn = conectar()
-        cursor = conn.cursor()
+        # Verificar conflitos
+        reserva_existente = db.reservas.find_one({
+            'sala_id': sala_id,
+            'data': data,
+            'periodo': periodo
+        })
 
-        # Verificar se já existe uma reserva para a mesma sala no mesmo dia e período
-        cursor.execute('SELECT periodo FROM Reservas WHERE sala_id = ? AND data = ?', (sala_id, data))
-        reservas_existentes = cursor.fetchall()
-
-        conflito = False
-        for reserva in reservas_existentes:
-            periodo_existente = reserva[0]
-            if periodo == "integral" or periodo_existente == "integral":
-                conflito = True
-            elif (periodo == "matutino" and periodo_existente == "vespertino") or (periodo == "vespertino" and periodo_existente == "matutino"):
-                conflito = False
-            else:
-                conflito = True
-
-        if conflito:
-            conn.close()
+        if reserva_existente:
             flash('Erro: Esta sala já foi reservada para este período e data.')
             return redirect(url_for('agendar_sala'))
 
+        nova_reserva = {
+            'nome': nome,
+            'matricula': matricula,
+            'setor': setor,
+            'sala_id': sala_id,
+            'data': data,
+            'periodo': periodo,
+            'equipamentos': equipamentos
+        }
+
         try:
-            cursor.execute('''INSERT INTO Reservas (nome, matricula, setor, sala_id, data, periodo, equipamentos)
-                              VALUES (?, ?, ?, ?, ?, ?, ?)''', (nome, matricula, setor, sala_id, data, periodo, equipamentos))
-            conn.commit()
+            db.reservas.insert_one(nova_reserva)
             flash('Reserva efetuada com sucesso!')
         except Exception as e:
             print(f"Erro ao inserir reserva: {e}")
             return f"Erro ao realizar a reserva: {e}"
-        finally:
-            conn.close()
 
         return redirect(url_for('agenda'))
 
-    # Listar os equipamentos para o formulário
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM Equipamentos ORDER BY nome')
-    equipamentos = cursor.fetchall()
-    cursor.execute('SELECT * FROM Sala ORDER BY nome')
-    salas = cursor.fetchall()
-    conn.close()
+    equipamentos = list(db.equipamentos.find())
+    salas = list(db.salas.find())
+    return render_template('agendar_sala.html', 
+                         equipamentos=equipamentos, 
+                         salas=salas)
 
-    return render_template('agendar_sala.html', equipamentos=equipamentos, salas=salas)
-
-# Endpoint para fornecer eventos em JSON para o FullCalendar
 @app.route('/get_reservas')
 def get_reservas():
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT Reservas.id, Reservas.nome, Reservas.data, Reservas.periodo, Sala.nome AS sala_nome 
-        FROM Reservas
-        JOIN Sala ON Reservas.sala_id = Sala.id
-        ORDER BY Reservas.data
-    ''')
-    reservas = cursor.fetchall()
-    conn.close()
+    reservas = list(db.reservas.aggregate([
+        {
+            '$lookup': {
+                'from': 'salas',
+                'localField': 'sala_id',
+                'foreignField': '_id',
+                'as': 'sala'
+            }
+        }
+    ]))
 
     eventos = []
     for reserva in reservas:
-        data = reserva[2]
-        periodo = reserva[3]
+        periodo = reserva['periodo']
         
         if periodo == 'matutino':
             start_time = '08:00'
@@ -102,174 +88,100 @@ def get_reservas():
             start_time = '08:00'
             end_time = '17:00'
         
+        sala_nome = reserva['sala'][0]['nome'] if reserva['sala'] else ''
+        
         evento = {
-            'id': reserva[0],
-            'title': f"{reserva[1]} - {reserva[4]}",
-            'start': f"{data}T{start_time}",
-            'end': f"{data}T{end_time}"
+            'id': str(reserva['_id']),
+            'title': f"{reserva['nome']} - {sala_nome}",
+            'start': f"{reserva['data']}T{start_time}",
+            'end': f"{reserva['data']}T{end_time}"
         }
         eventos.append(evento)
 
     return jsonify(eventos)
-    # Continuação do arquivo anterior...
 
-# Rota para visualizar a agenda de reservas
 @app.route('/agenda')
 def agenda():
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT r.id, r.nome, r.matricula, r.setor, s.nome as sala_nome, 
-               r.data, r.periodo, r.equipamentos
-        FROM Reservas r
-        JOIN Sala s ON r.sala_id = s.id
-        ORDER BY r.data DESC
-    ''')
-    reservas = cursor.fetchall()
-    conn.close()
+    reservas = list(db.reservas.aggregate([
+        {
+            '$lookup': {
+                'from': 'salas',
+                'localField': 'sala_id',
+                'foreignField': '_id',
+                'as': 'sala'
+            }
+        },
+        {
+            '$sort': {'data': -1}
+        }
+    ]))
     return render_template('agenda.html', reservas=reservas)
 
-# Rota para gerenciar os equipamentos
 @app.route('/equipamentos', methods=['GET', 'POST'])
 def equipamentos():
-    conn = conectar()
-    cursor = conn.cursor()
-
     if request.method == 'POST':
-        nome_equip = request.form['nome']
-        quantidade = request.form['quantidade']
+        equipamento = {
+            'nome': request.form['nome'],
+            'quantidade': int(request.form['quantidade'])
+        }
 
         try:
-            cursor.execute('INSERT INTO Equipamentos (nome, quantidade) VALUES (?, ?)', 
-                         (nome_equip, quantidade))
-            conn.commit()
+            db.equipamentos.insert_one(equipamento)
             flash('Equipamento cadastrado com sucesso!')
         except Exception as e:
             print(f"Erro ao cadastrar equipamento: {e}")
             flash('Erro ao cadastrar equipamento!')
-        finally:
-            conn.close()
 
         return redirect(url_for('equipamentos'))
 
-    cursor.execute('SELECT * FROM Equipamentos ORDER BY nome')
-    equipamentos = cursor.fetchall()
-    conn.close()
-
+    equipamentos = list(db.equipamentos.find().sort('nome'))
     return render_template('equipamentos.html', equipamentos=equipamentos)
 
-# Rota para deletar reserva
-@app.route('/deletar/<int:id>')
+@app.route('/deletar/<id>')
 def deletar_reserva(id):
-    conn = conectar()
-    cursor = conn.cursor()
     try:
-        cursor.execute('DELETE FROM Reservas WHERE id = ?', (id,))
-        conn.commit()
+        from bson.objectid import ObjectId
+        db.reservas.delete_one({'_id': ObjectId(id)})
         flash('Reserva excluída com sucesso!')
     except Exception as e:
         print(f"Erro ao deletar reserva: {e}")
         flash('Erro ao excluir reserva!')
-    finally:
-        conn.close()
     
     return redirect(url_for('agenda'))
 
-# Rota para editar reserva
-@app.route('/editar/<int:id>', methods=['GET', 'POST'])
+@app.route('/editar/<id>', methods=['GET', 'POST'])
 def editar_reserva(id):
-    conn = conectar()
-    cursor = conn.cursor()
+    from bson.objectid import ObjectId
     
     if request.method == 'POST':
-        nome = request.form['nome']
-        matricula = request.form['matricula']
-        setor = request.form['setor']
-        sala_id = request.form['sala_id']
-        data = request.form['data']
-        periodo = request.form['periodo']
-        equipamentos = ', '.join(request.form.getlist('equipamentos'))
-
         try:
-            cursor.execute('''UPDATE Reservas
-                          SET nome = ?, matricula = ?, setor = ?, sala_id = ?, 
-                              data = ?, periodo = ?, equipamentos = ?
-                          WHERE id = ?''', 
-                          (nome, matricula, setor, sala_id, data, 
-                           periodo, equipamentos, id))
-            conn.commit()
+            db.reservas.update_one(
+                {'_id': ObjectId(id)},
+                {'$set': {
+                    'nome': request.form['nome'],
+                    'matricula': request.form['matricula'],
+                    'setor': request.form['setor'],
+                    'sala_id': request.form['sala_id'],
+                    'data': request.form['data'],
+                    'periodo': request.form['periodo'],
+                    'equipamentos': request.form.getlist('equipamentos')
+                }}
+            )
             flash('Reserva alterada com sucesso!')
         except Exception as e:
             print(f"Erro ao atualizar reserva: {e}")
             flash('Erro ao atualizar reserva!')
-        finally:
-            conn.close()
 
         return redirect(url_for('agenda'))
 
-    # Carregar dados para edição
-    cursor.execute('SELECT * FROM Reservas WHERE id = ?', (id,))
-    reserva = cursor.fetchone()
-    
-    # Carregar equipamentos e salas para o formulário
-    cursor.execute('SELECT * FROM Equipamentos ORDER BY nome')
-    equipamentos = cursor.fetchall()
-    cursor.execute('SELECT * FROM Sala ORDER BY nome')
-    salas = cursor.fetchall()
-    
-    conn.close()
+    reserva = db.reservas.find_one({'_id': ObjectId(id)})
+    equipamentos = list(db.equipamentos.find().sort('nome'))
+    salas = list(db.salas.find().sort('nome'))
 
     return render_template('editar_reserva.html', 
                          reserva=reserva, 
                          equipamentos=equipamentos,
                          salas=salas)
-
-# Rota para deletar equipamentos
-@app.route('/deletar_equipamento/<int:id>')
-def deletar_equipamento(id):
-    conn = conectar()
-    cursor = conn.cursor()
-    try:
-        cursor.execute('DELETE FROM Equipamentos WHERE id = ?', (id,))
-        conn.commit()
-        flash('Equipamento excluído com sucesso!')
-    except Exception as e:
-        print(f"Erro ao deletar equipamento: {e}")
-        flash('Erro ao excluir equipamento!')
-    finally:
-        conn.close()
-    
-    return redirect(url_for('equipamentos'))
-
-# Rota para editar equipamentos
-@app.route('/editar_equipamento/<int:id>', methods=['GET', 'POST'])
-def editar_equipamento(id):
-    conn = conectar()
-    cursor = conn.cursor()
-    
-    if request.method == 'POST':
-        nome = request.form['nome']
-        quantidade = request.form['quantidade']
-
-        try:
-            cursor.execute('''UPDATE Equipamentos
-                          SET nome = ?, quantidade = ?
-                          WHERE id = ?''', (nome, quantidade, id))
-            conn.commit()
-            flash('Equipamento alterado com sucesso!')
-        except Exception as e:
-            print(f"Erro ao atualizar equipamento: {e}")
-            flash('Erro ao atualizar equipamento!')
-        finally:
-            conn.close()
-
-        return redirect(url_for('equipamentos'))
-
-    cursor.execute('SELECT * FROM Equipamentos WHERE id = ?', (id,))
-    equipamento = cursor.fetchone()
-    conn.close()
-
-    return render_template('editar_equipamento.html', equipamento=equipamento)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
