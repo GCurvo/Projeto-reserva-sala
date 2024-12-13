@@ -1,78 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda de Reservas</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/locales-all.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
             padding: 0;
-        }
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-        .message {
-            background-color: #dff0d8;
-            color: #3c763d;
-            padding: 10px;
-            margin: 10px auto;
-            border: 1px solid #d6e9c6;
-            border-radius: 5px;
-            max-width: 600px;
-            text-align: center;
-        }
-        .reservas-list {
-            background-color: #ffffff;
-            padding: 20px;
-            margin: 20px auto;
-            border-radius: 10px;
-            max-width: 600px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        ul li {
-            background-color: #ecf0f1;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
         }
-        ul li a {
-            text-decoration: none;
-            font-weight: bold;
-            margin-left: 10px;
+        h1 {
+            color: #2c3e50;
+            margin: 20px 0;
         }
-        ul li a.editar {
-            color: #3498db;
-        }
-        ul li a.editar:hover {
-            color: #2980b9;
-        }
-        ul li a.excluir {
-            color: #e74c3c;
-        }
-        ul li a.excluir:hover {
-            color: #c0392b;
+        #calendar {
+            width: 80%;
+            max-width: 900px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .btn-voltar {
-            display: block;
-            margin: 20px auto;
-            background-color: #95a5a6;
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #3498db;
             color: white;
-            text-align: center;
-            padding: 10px;
             text-decoration: none;
             border-radius: 5px;
+            font-weight: bold;
+        }
+        .btn-voltar:hover {
+            background-color: #2980b9;
+        }
+        /* Estilo personalizado para feriados */
+        .feriado-event .fc-event-title {
+            font-weight: bold !important;
+            color: #000 !important; /* Define o texto em preto */
         }
     </style>
 </head>
@@ -80,32 +52,52 @@
 
     <h1>Agenda de Reservas</h1>
 
-    <!-- Exibir a mensagem de sucesso -->
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="message">
-          {{ messages[0] }}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-    <div class="reservas-list">
-        <ul>
-            {% for reserva in reservas %}
-            <li>
-                Nome: {{ reserva[0] }}, Data: {{ reserva[1] }}, Período: {{ reserva[2] }}, 
-                Sala: {{ reserva[3] }}
-                <div>
-                    <a href="/editar/{{ reserva[5] }}" class="editar">Editar</a>
-                    <a href="/deletar/{{ reserva[5] }}" class="excluir" onclick="return confirm('Tem certeza que deseja excluir esta reserva?');">Excluir</a>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
+    <div id="calendar"></div>
 
     <!-- Botão para voltar ao menu principal -->
     <a href="/" class="btn-voltar">Voltar ao Menu Principal</a>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                locale: 'pt-br',  // Define o idioma para português do Brasil
+                events: [
+                    // Feriados Nacionais de 2024 com a classe de estilo personalizada
+                    { title: 'Ano Novo', start: '2024-01-01', color: 'red', display: 'background', classNames: ['feriado-event'] },
+                    { title: 'Carnaval', start: '2024-02-12', end: '2024-02-13', color: 'purple', display: 'background', classNames: ['feriado-event'] },
+                    { title: 'Sexta-feira Santa', start: '2024-03-29', color: 'red', display: 'background', classNames: ['feriado-event'] },
+                    { title: 'Páscoa', start: '2024-03-31', color: 'red', display: 'background', classNames: ['feriado-event'] },
+                    { title: 'Dia do Trabalho', start: '2024-05-01', color: 'blue', display: 'background', classNames: ['feriado-event'] },
+                    { title: 'Corpus Christi', start: '2024-05-30', color: 'purple', display: 'background', classNames: ['feriado-event'] },
+                    { title: 'Independência do Brasil', start: '2024-09-07', color: 'green', display: 'background', classNames: ['feriado-event'] },
+                    { title: 'Nossa Senhora Aparecida', start: '2024-10-12', color: 'purple', display: 'background', classNames: ['feriado-event'] },
+                    { title: 'Finados', start: '2024-11-02', color: 'gray', display: 'background', classNames: ['feriado-event'] },
+                    { title: 'Proclamação da República', start: '2024-11-15', color: 'green', display: 'background', classNames: ['feriado-event'] },
+                    { title: 'Natal', start: '2024-12-25', color: 'red', display: 'background', classNames: ['feriado-event'] },
+
+                    // Feriados Municipais de Cuiabá em 2024
+                    { title: 'Aniversário de Cuiabá', start: '2024-04-08', color: 'blue', display: 'background', classNames: ['feriado-event'] },
+                ],
+                eventSources: [
+                    {
+                        url: '/get_reservas',  // Rota para obter reservas do backend
+                        method: 'GET',
+                        failure: function() {
+                            alert('Erro ao carregar as reservas!');
+                        },
+                    }
+                ],
+                themeSystem: 'standard'
+            });
+            calendar.render();
+        });
+    </script>
 </body>
 </html>

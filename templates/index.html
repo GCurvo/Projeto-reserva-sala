@@ -11,7 +11,7 @@
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             height: 100vh;
         }
@@ -41,9 +41,51 @@
         .menu-container a:hover {
             background-color: #2980b9;
         }
+        /* Estilo do Header */
+        header {
+            background-color: #2754b9;
+            color: #212529;
+            height: 150px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            
+            margin-bottom: 20px;
+            justify-content: space-between;
+        }
+        header img {
+            height: 100px; /* Ajuste a altura do logotipo */
+        }
+        .nav {
+            display: flex;
+            gap: 15px;
+        }
+        .nav a {
+            color: #212529;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .nav a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+    <header>
+        <div>
+            <img src="{{ url_for('static', filename='IMAGEM.jpg') }}" alt="GOVSESexit
+            ">
+        </div>
+        <nav class="nav">
+            <a href="/">Home</a>
+            <a href="/agendar">Agendar Sala</a>
+            <a href="/equipamentos">Equipamentos</a>
+            <a href="/agenda">Agenda</a>
+        </nav>
+    </header>
+    
     <div class="menu-container">
         <h1>Menu Principal</h1>
         <a href="/agendar">Agendar Sala</a>

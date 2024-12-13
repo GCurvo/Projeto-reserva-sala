@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from database import conectar, criar_tabelas
 
 app = Flask(__name__)
@@ -68,17 +68,48 @@ def agendar_sala():
 
     return render_template('agendar_sala.html', equipamentos=equipamentos)
 
+# Endpoint para fornecer eventos em JSON para o FullCalendar
+@app.route('/get_reservas')
+def get_reservas():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT Reservas.id, Reservas.nome, Reservas.data, Reservas.periodo, Sala.nome AS sala_nome 
+        FROM Reservas
+        JOIN Sala ON Reservas.sala_id = Sala.id
+    ''')
+    reservas = cursor.fetchall()
+    conn.close()
+
+    eventos = []
+    for reserva in reservas:
+        data = reserva[2]
+        periodo = reserva[3]
+        
+        if periodo == 'matutino':
+            start_time = '08:00'
+            end_time = '12:00'
+        elif periodo == 'vespertino':
+            start_time = '13:00'
+            end_time = '17:00'
+        elif periodo == 'integral':
+            start_time = '08:00'
+            end_time = '17:00'
+        
+        evento = {
+            'id': reserva[0],
+            'title': f"{reserva[1]} - {reserva[4]}",
+            'start': f"{data}T{start_time}",
+            'end': f"{data}T{end_time}"
+        }
+        eventos.append(evento)
+
+    return jsonify(eventos)
+
 # Rota para visualizar a agenda de reservas
 @app.route('/agenda')
 def agenda():
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute('''SELECT Reservas.nome, Reservas.data, Reservas.periodo, Sala.nome AS sala_nome, Reservas.equipamentos, Reservas.id
-                      FROM Reservas
-                      JOIN Sala ON Reservas.sala_id = Sala.id''')
-    reservas = cursor.fetchall()
-    conn.close()
-    return render_template('agenda.html', reservas=reservas)
+    return render_template('agenda.html')
 
 # Rota para gerenciar os equipamentos (cadastrar, editar, excluir)
 @app.route('/equipamentos', methods=['GET', 'POST'])

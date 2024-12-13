@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "plyconfig.json": "jsonc"
+        "plyconfig.json": "jsonc",
+        "Marina.C": "cpp"
     }
 }
